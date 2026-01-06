@@ -1,0 +1,17 @@
+<%- include("partials/header.ejs") %>
+
+    <h1>User Login Page.</h1>
+
+    <div class="rightCorner"></div>
+    <p>
+        <form class="loginSignup" action="/login" method="POST">
+            <label for="login">Username:</label>
+            <input type="text" name="Username" placeholder="..." />
+            <br/>
+            <label for="login">Password:</label>
+            <input type="password" name="Password" placeholder="..." />
+            <br/><br/>
+            <input type="submit" value="Login" class="genButton"/>
+        </form>
+    </p>
+<%- include("partials/footer.ejs") %>

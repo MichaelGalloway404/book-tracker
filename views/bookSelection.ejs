@@ -1,0 +1,44 @@
+<%- include("partials/header.ejs") %>
+
+  <% if (bookTitle && bookAuthor){%>
+    <h1>Search Results for Author: <%= bookAuthor %> Title: <%= bookTitle %></h1>
+  <%}else if(bookTitle){%>
+    <h1>Search Results for Title: <%= bookTitle %></h1>
+  
+  <%}else{%>
+    <h1>Search Results for Author: <%= bookAuthor %> </h1>
+  <%}%>
+  <div class="book-grid">
+    <% books.forEach(book=> { %>
+      <div>
+        <img class="coverImg" src="<%= book.coverUrl %>" alt="Cover">
+        <p class="author">"<%= book.title %>"</p>
+
+        <form action="/addBook" method="POST">
+        <input type="hidden" name="coverUrl" value="<%= book.coverUrl %>">
+        <input type="hidden" name="author" value="<%= book.author %>">
+        <input type="hidden" name="title" value="<%= book.title %>">
+        <button type="submit" class="genButton">Select</button>
+        </form>
+
+      </div>
+      <% }) %>
+  </div>
+<form action="/search" method="POST">
+    <input type="hidden" name="bookTitle" value="<%= bookTitle %>" />
+    <input type="hidden" name="bookAuthor" value="<%= bookAuthor %>"/>
+    <input type="hidden" name="index" value="<%= 20 %>">
+    <button class="nextButton" type="submit">Next Page</button>
+</form>
+<form action="/search" method="POST">
+    <input type="hidden" name="bookTitle" value="<%= bookTitle %>" />
+    <input type="hidden" name="bookAuthor" value="<%= bookAuthor %>"/>
+    <input type="hidden" name="index" value="<%= -20 %>">
+    <button class="prevButton" type="submit">Prev Page</button>
+</form>
+<div class="homeButtonContainer">
+    <form action="/profile" method="GET">
+        <button class="homeButton" type="submit">Back to Profile</button>
+    </form>
+</div>
+  <%- include("partials/footer.ejs") %>

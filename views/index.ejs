@@ -1,0 +1,19 @@
+<%- include("partials/header.ejs") %>
+<div class="center">
+    <% for(i in rows){%>
+        <div class="profileVisitTab">
+            <h2><%= rows[i]["username"] %></h2>
+            <form action="/profileView" method="POST">
+                <input type="hidden" name="user" value="<%= rows[i]["username"] %>">
+                <button type="submit" class="genButton">Visit page</button>
+            </form>
+        </div>
+        
+    <%} %>
+</div>
+
+<div class="linkTable">
+    <a class="linkTab" href="/login">Login</a>
+    <a class="linkTab" href="/signUp">Sign-Up</a>
+</div>
+<%- include("partials/footer.ejs") %>

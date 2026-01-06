@@ -1,0 +1,19 @@
+<%- include("partials/header.ejs") %>
+<h1><%= listTitle %></h1>
+
+<div class="book-grid">
+  <% for(let i=0; i < listItems.length; i++) { %>
+      <div>
+
+        <input type="hidden" name="coverUrl" value="<%= listItems[i].cover_link %>">
+        <input type="hidden" name="title" value="<%= listItems[i].title %>">
+        <input type="hidden" name="author" value="<%= listItems[i].author  %>">
+
+
+        <img class="coverImg" src="<%= listItems[i].cover_url %>" />
+        <p class="author">Author: <%= listItems[i].author %></p>
+      </div>
+  <% } %>
+</div>
+
+<%- include("partials/footer.ejs") %>

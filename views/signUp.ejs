@@ -1,0 +1,20 @@
+<%- include("partials/header.ejs") %>
+
+    <h1>New User Sign Up Page.</h1>
+
+    <div class="rightCorner"></div>
+    <p>
+        <form class="loginSignup" action="/signUp" method="POST">
+            <label for="signUp">Username:</label>
+            <input type="text" name="Username" placeholder="..." />
+            <br/>
+            <label for="signUp">New Password:</label>
+            <input type="password" name="Password" placeholder="..." />
+            <br/><br/>
+            <label for="signUp">Confirm Password:</label>
+            <input type="password" name="confirmPassword" placeholder="..." />
+            <br/><br/>
+            <input type="submit" value="Login" />
+        </form>
+    </p>
+<%- include("partials/footer.ejs") %>
