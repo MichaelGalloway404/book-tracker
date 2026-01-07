@@ -1,7 +1,6 @@
 import express from "express";
-import bodyParser from "body-parser";
 import axios from "axios";
-import { sql } from "@vercel/postgres"; //
+import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
@@ -16,10 +15,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
    APP SETUP
 ===================== */
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"));
+
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
@@ -29,6 +30,7 @@ app.set("views", path.join(process.cwd(), "views"));
 function requireAuth(req, res, next) {
   const token = req.cookies.token;
   if (!token) return res.redirect("/");
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.userId = decoded.userId;
@@ -40,50 +42,50 @@ function requireAuth(req, res, next) {
 }
 
 /* =====================
-   UTILS (OpenLibrary API)
+   UTILS (OpenLibrary)
 ===================== */
 function addBook(isbn) {
-  return `covers.openlibrary.org{isbn}-M.jpg`;
+  return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
 }
 
 async function getIsbnFromName(title, author) {
   const covers = [];
   const params = new URLSearchParams();
+
   if (title) params.append("title", title);
   if (author) params.append("author", author);
+
   try {
-    const response = await axios.get(`openlibrary.org{params.toString()}`);
+    const response = await axios.get(
+      `https://openlibrary.org/search.json?${params.toString()}`
+    );
+
     for (const doc of response.data.docs || []) {
       if (doc.cover_i) {
         covers.push({
           title: doc.title,
           author: (doc.author_name || []).join(", "),
-          coverUrl: `covers.openlibrary.org{doc.cover_i}-M.jpg`,
+          coverUrl: `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`,
           isbn: doc.isbn?.[0] || null,
         });
       }
     }
-  } catch (err) { console.error("OpenLibrary error:", err.message); }
+  } catch (err) {
+    console.error("OpenLibrary error:", err.message);
+  }
+
   return covers;
 }
 
-function getImagesForPage(covers, start, end) {
-  return covers.slice(start, end).map(book => ({
-    title: book.title || "Unknown Title",
-    author: book.author || "Unknown Author",
-    coverUrl: book.coverUrl || addBook(book.isbn || ""),
-  }));
-}
-
 /* =====================
-   ROUTES (Postgres Syntax)
+   ROUTES
 ===================== */
 
 // HOME
 app.get("/", async (req, res) => {
-  // Use sql template literal for Postgres
-  const { rows } = await sql`SELECT username FROM users`; 
+  const { rows } = await sql`SELECT username FROM users`;
   rows.forEach(u => (u.username = u.username.toUpperCase()));
+
   res.clearCookie("token");
   res.render("index.ejs", { rows });
 });
@@ -91,34 +93,63 @@ app.get("/", async (req, res) => {
 // LOGIN
 app.post("/login", async (req, res) => {
   const { Username, Password } = req.body;
-  const { rows } = await sql`SELECT id, password FROM users WHERE username = ${Username}`;
+
+  const { rows } =
+    await sql`SELECT id, password FROM users WHERE username = ${Username}`;
 
   if (!rows.length || !(await bcrypt.compare(Password, rows[0].password))) {
     return res.render("login.ejs", { error: "Invalid credentials" });
   }
 
-  const token = jwt.sign({ userId: rows[0].id }, JWT_SECRET, { expiresIn: "7d" });
-  res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "lax" });
+  const token = jwt.sign({ userId: rows[0].id }, JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
   res.redirect("/profile");
 });
 
 // SIGN UP
 app.post("/signUp", async (req, res) => {
   const { Username, Password, confirmPassword } = req.body;
-  if (!Username || Password !== confirmPassword) return res.render("signUp.ejs", { error: "Invalid input" });
 
-  const { rows: existing } = await sql`SELECT id FROM users WHERE username = ${Username}`;
-  if (existing.length) return res.render("signUp.ejs", { error: "Username taken" });
+  if (!Username || Password !== confirmPassword) {
+    return res.render("signUp.ejs", { error: "Invalid input" });
+  }
+
+  const { rows: existing } =
+    await sql`SELECT id FROM users WHERE username = ${Username}`;
+
+  if (existing.length) {
+    return res.render("signUp.ejs", { error: "Username taken" });
+  }
 
   const hashedPassword = await bcrypt.hash(Password, 10);
-  await sql`INSERT INTO users (username, password) VALUES (${Username}, ${hashedPassword})`;
+
+  await sql`
+    INSERT INTO users (username, password)
+    VALUES (${Username}, ${hashedPassword})
+  `;
+
   res.render("login.ejs", { message: "Account created. Please log in." });
 });
 
 // PROFILE
 app.get("/profile", requireAuth, async (req, res) => {
-  const { rows: userData } = await sql`SELECT username FROM users WHERE id = ${req.userId}`;
-  const { rows: books } = await sql`SELECT title, author, cover_url FROM books WHERE user_id = ${req.userId}`;
+  const { rows: userData } =
+    await sql`SELECT username FROM users WHERE id = ${req.userId}`;
+
+  const { rows: books } =
+    await sql`
+      SELECT title, author, cover_url
+      FROM books
+      WHERE user_id = ${req.userId}
+    `;
 
   res.render("profile.ejs", {
     listTitle: `${userData[0].username}'s Books`,
@@ -129,15 +160,30 @@ app.get("/profile", requireAuth, async (req, res) => {
 // ADD BOOK
 app.post("/addBook", requireAuth, async (req, res) => {
   const { title, author, coverUrl } = req.body;
-  await sql`INSERT INTO books (user_id, title, author, cover_url) VALUES (${req.userId}, ${title}, ${author}, ${coverUrl})`;
+
+  await sql`
+    INSERT INTO books (user_id, title, author, cover_url)
+    VALUES (${req.userId}, ${title}, ${author}, ${coverUrl})
+  `;
+
   res.redirect("/profile");
 });
 
 // DELETE BOOK
 app.post("/deleteBook", requireAuth, async (req, res) => {
   const { title, author } = req.body;
-  await sql`DELETE FROM books WHERE user_id = ${req.userId} AND title = ${title} AND author = ${author}`;
+
+  await sql`
+    DELETE FROM books
+    WHERE user_id = ${req.userId}
+      AND title = ${title}
+      AND author = ${author}
+  `;
+
   res.redirect("/profile");
 });
 
+/* =====================
+   EXPORT FOR VERCEL
+===================== */
 export default app;
