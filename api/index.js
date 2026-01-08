@@ -91,6 +91,11 @@ app.get("/", async (req, res) => {
 });
 
 // LOGIN
+// SHOW LOGIN PAGE
+app.get("/login", (req, res) => {
+  res.render("login.ejs");
+});
+
 app.post("/login", async (req, res) => {
   const { Username, Password } = req.body;
 
