@@ -1,4 +1,4 @@
-<%- include("partials/header.ejs") %>
+<%- include("/header.ejs") %>
 <h1><%= listTitle %></h1>
 <form action="/search" method="POST">
   <input name="bookTitle" placeholder="Title" />
@@ -27,4 +27,4 @@
   <button type="submit" class="genButton">Sign Out</button>
 </form>
 
-<%- include("partials/footer.ejs") %>
+<%- include("/footer.ejs") %>
