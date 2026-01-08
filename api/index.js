@@ -120,6 +120,11 @@ app.post("/login", async (req, res) => {
 });
 
 // SIGN UP
+// SHOW SIGN UP PAGE
+app.get("/signUp", (req, res) => {
+  res.render("signUp.ejs");
+});
+
 app.post("/signUp", async (req, res) => {
   const { Username, Password, confirmPassword } = req.body;
 
