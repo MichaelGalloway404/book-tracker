@@ -1,4 +1,4 @@
-<%- include("/header.ejs") %>
+<%- include("./header.ejs") %>
 
   <% if (bookTitle && bookAuthor){%>
     <h1>Search Results for Author: <%= bookAuthor %> Title: <%= bookTitle %></h1>
@@ -41,4 +41,4 @@
         <button class="homeButton" type="submit">Back to Profile</button>
     </form>
 </div>
-  <%- include("/footer.ejs") %>
+  <%- include("./footer.ejs") %>
