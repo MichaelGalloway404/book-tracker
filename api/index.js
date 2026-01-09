@@ -180,7 +180,7 @@ app.post("/profileView", async (req, res) => {
 
   // Find user by username
   const { rows: users } =
-    await sql`SELECT id, username FROM users WHERE username = ${user}`;
+    await sql`SELECT id, username FROM users WHERE username = MIKE`;
 
   console.log(rows);
   if (users.length === 0) {
