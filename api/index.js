@@ -180,9 +180,9 @@ app.post("/profileView", async (req, res) => {
 
   // Find user by username
   const { rows: users } =
-    await sql`SELECT id, username FROM users WHERE username = MIKE`;
+    await sql`SELECT id, username FROM users WHERE username = ${user}`;
 
-  console.log(rows);
+  console.log(users[0]);
   if (users.length === 0) {
     return res.render("profileView.ejs", {
       listTitle: "No Books",
