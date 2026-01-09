@@ -179,8 +179,9 @@ app.post("/profileView", async (req, res) => {
   }
 
   // Find user by username
-  const { rows: users } =
-    await sql`SELECT id, username FROM users WHERE username = ${user}`;
+  // const { rows: users } = await sql`SELECT id, username FROM users WHERE username = ${user}`;
+  const { rows: users } = await sql`SELECT id, username FROM users WHERE username ILIKE ${user}`;
+
 console.log("user:", user);
 
   if (users.length === 0) {
