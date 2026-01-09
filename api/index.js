@@ -182,7 +182,7 @@ app.post("/profileView", async (req, res) => {
   const { rows: users } =
     await sql`SELECT id, username FROM users WHERE username = ${user}`;
 
-  console.log(users);
+  console.log(rows);
   if (users.length === 0) {
     return res.render("profileView.ejs", {
       listTitle: "No Books",
