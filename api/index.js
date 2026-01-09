@@ -170,6 +170,42 @@ app.get("/profile", requireAuth, async (req, res) => {
   });
 });
 
+// viewing user profile
+app.post("/profileView", async (req, res) => {
+  const { user } = req.body; // username sent from form
+
+  if (!user) {
+    return res.redirect("/");
+  }
+
+  // 1️⃣ Find user by username
+  const { rows: users } =
+    await sql`SELECT id, username FROM users WHERE username = ${user}`;
+
+  if (users.length === 0) {
+    return res.render("profileView.ejs", {
+      listTitle: "No Books",
+      listItems: [],
+    });
+  }
+
+  const foundUser = users[0];
+
+  // 2️⃣ Fetch that user's books
+  const { rows: books } =
+    await sql`
+      SELECT title, author, cover_url
+      FROM books
+      WHERE user_id = ${foundUser.id}
+    `;
+
+  // 3️⃣ Render profile view
+  res.render("profileView.ejs", {
+    listTitle: `${foundUser.username}'s Books`,
+    listItems: books,
+  });
+});
+
 // ADD BOOK
 app.post("/addBook", requireAuth, async (req, res) => {
   const { title, author, coverUrl } = req.body;
