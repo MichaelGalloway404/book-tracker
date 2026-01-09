@@ -173,7 +173,6 @@ app.get("/profile", requireAuth, async (req, res) => {
 // VIEW a users profile not logged in
 app.post("/profileView", async (req, res) => {
   const { user } = req.body; // username sent from form
-  console.log(req.body);
 
   if (!user) {
     return res.redirect("/");
@@ -183,6 +182,7 @@ app.post("/profileView", async (req, res) => {
   const { rows: users } =
     await sql`SELECT id, username FROM users WHERE username = ${user}`;
 
+  console.log(users);
   if (users.length === 0) {
     return res.render("profileView.ejs", {
       listTitle: "No Books",
