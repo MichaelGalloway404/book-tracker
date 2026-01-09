@@ -170,7 +170,7 @@ app.get("/profile", requireAuth, async (req, res) => {
   });
 });
 
-// viewing user profile
+// VIEW a users profile not logged in
 app.post("/profileView", async (req, res) => {
   const { user } = req.body; // username sent from form
 
@@ -205,6 +205,57 @@ app.post("/profileView", async (req, res) => {
     listItems: books,
   });
 });
+
+// SEARCH FOR A BOOK
+// Helper function for paging
+function getImagesForPage(covers, start, end) {
+  return covers.slice(start, end);
+}
+
+// search for a book with paging
+app.post("/search", async (req, res) => {
+  try {
+    const { bookTitle = "", bookAuthor = "", index = "0" } = req.body;
+
+    const pageIndex = parseInt(index, 10) || 0; // page offset
+    const pageSize = 20;
+
+    let covers = [];
+    const trimmedTitle = bookTitle.trim();
+
+    // 1️⃣ Direct ISBN search
+    if (/^\d{10,13}$/.test(trimmedTitle)) {
+      covers = [{
+        title: `Book with ISBN ${trimmedTitle}`,
+        author: "Unknown Author",
+        coverUrl: addBook(trimmedTitle),
+        isbn: trimmedTitle,
+      }];
+    } else {
+      // 2️⃣ Search by title/author using OpenLibrary
+      covers = await getIsbnFromName(trimmedTitle, bookAuthor);
+    }
+
+    // 3️⃣ Paginate results
+    const start = pageIndex * pageSize;
+    const end = start + pageSize;
+    const books = getImagesForPage(covers, start, end);
+
+    // 4️⃣ Render page
+    res.render("bookSelection", {
+      books,
+      pageQuantity: pageIndex, // current page index
+      bookTitle,
+      bookAuthor,
+      totalPages: Math.ceil(covers.length / pageSize),
+    });
+
+  } catch (err) {
+    console.error("Error in POST /search:", err);
+    res.redirect("/");
+  }
+});
+
 
 // ADD BOOK
 app.post("/addBook", requireAuth, async (req, res) => {
