@@ -4,8 +4,8 @@
         <div class="profileVisitTab">
             <h2><%= rows[i]["username"] %></h2>
             <form action="/profileView" method="POST">
-                <input type="hidden" name="user" value="<%= row.username %>">
-                <button type="submit">View Profile</button>
+                <input type="hidden" name="user" value="<%= rows[i]["username"] %>">
+                <button type="submit" class="genButton">Visit page</button>
             </form>
         </div>
         
