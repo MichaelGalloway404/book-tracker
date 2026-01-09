@@ -173,12 +173,13 @@ app.get("/profile", requireAuth, async (req, res) => {
 // VIEW a users profile not logged in
 app.post("/profileView", async (req, res) => {
   const { user } = req.body; // username sent from form
+  console.log(req.body);
 
   if (!user) {
     return res.redirect("/");
   }
 
-  // 1️⃣ Find user by username
+  // Find user by username
   const { rows: users } =
     await sql`SELECT id, username FROM users WHERE username = ${user}`;
 
@@ -191,7 +192,7 @@ app.post("/profileView", async (req, res) => {
 
   const foundUser = users[0];
 
-  // 2️⃣ Fetch that user's books
+  // Fetch that user's books
   const { rows: books } =
     await sql`
       SELECT title, author, cover_url
@@ -199,7 +200,7 @@ app.post("/profileView", async (req, res) => {
       WHERE user_id = ${foundUser.id}
     `;
 
-  // 3️⃣ Render profile view
+  // Render profile view
   res.render("profileView.ejs", {
     listTitle: `${foundUser.username}'s Books`,
     listItems: books,
