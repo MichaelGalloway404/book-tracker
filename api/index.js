@@ -19,7 +19,10 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static("public"));
+app.use(
+  "/public",
+  express.static(path.join(process.cwd(), "public"))
+);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
