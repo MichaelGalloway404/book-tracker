@@ -27,9 +27,6 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
-// varible to keep track of what page we are on
-let pageQuantity = 0;
-
 /* =====================
    AUTH MIDDLEWARE
 ===================== */
@@ -212,7 +209,10 @@ console.log("user:", user);
 });
 
 // SEARCH FOR A BOOK
-// Create books array with cover URLs for current page slice
+// Helper function for paging
+// function getImagesForPage(covers, start, end) {
+//   return covers.slice(start, end);
+// }
 function getImagesForPage(covers, start, end) {
   const sliced = covers.slice(start, end);
 
@@ -228,29 +228,41 @@ function getImagesForPage(covers, start, end) {
 // search for a book with paging
 app.post("/search", async (req, res) => {
   try {
-    const { bookTitle, bookAuthor } = req.body;
+    const { bookTitle = "", bookAuthor = "", index = "0" } = req.body;
 
-    const isDirectIsbn = /^\d{10,13}$/.test(bookTitle.trim());
+    const pageIndex = parseInt(index, 10) || 0; // page offset
+    const pageSize = 20;
+
     let covers = [];
+    const trimmedTitle = bookTitle.trim();
 
-    if (isDirectIsbn) {
-      // Direct ISBN search
+    // Direct ISBN search
+    if (/^\d{10,13}$/.test(trimmedTitle)) {
       covers = [{
-        title: `Book with ISBN ${bookTitle.trim()}`,
+        title: `Book with ISBN ${trimmedTitle}`,
         author: "Unknown Author",
-        coverUrl: addBook(bookTitle.trim()),
-        isbn: bookTitle.trim(),
+        coverUrl: addBook(trimmedTitle),
+        isbn: trimmedTitle,
       }];
     } else {
-      covers = await getIsbnFromName(bookTitle, bookAuthor);
+      //  Search by title/author using OpenLibrary
+      covers = await getIsbnFromName(trimmedTitle, bookAuthor);
     }
 
-    const index = parseInt(req.body.index, 10);
-    pageQuantity += index || 0; 
-    const books = getImagesForPage(covers, pageQuantity, pageQuantity + 20);
+    // Paginate results
+    const start = pageIndex * pageSize;
+    const end = start + pageSize;
+    const books = getImagesForPage(covers, start, end);
 
-    // Save covers in session or global (if needed, here just pass to render)
-    res.render("bookSelection", { books, pageQuantity, bookTitle, bookAuthor});
+    // Render page
+    res.render("bookSelection", {
+      books,
+      pageQuantity: pageIndex, // current page index
+      bookTitle,
+      bookAuthor,
+      totalPages: Math.ceil(covers.length / pageSize),
+    });
+
   } catch (err) {
     console.error("Error in POST /search:", err);
     res.redirect("/");
