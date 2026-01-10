@@ -209,10 +209,7 @@ console.log("user:", user);
 });
 
 // SEARCH FOR A BOOK
-// Helper function for paging
-// function getImagesForPage(covers, start, end) {
-//   return covers.slice(start, end);
-// }
+// Create books array with cover URLs for current page slice
 function getImagesForPage(covers, start, end) {
   const sliced = covers.slice(start, end);
 
