@@ -225,41 +225,30 @@ function getImagesForPage(covers, start, end) {
 // search for a book with paging
 app.post("/search", async (req, res) => {
   try {
-    const { bookTitle = "", bookAuthor = "", index = "0" } = req.body;
+    const { bookTitle, bookAuthor } = req.body;
 
-    const pageIndex = parseInt(index, 10) || 0; // page offset
-    const pageSize = 20;
-
+    const isDirectIsbn = /^\d{10,13}$/.test(bookTitle.trim());
     let covers = [];
-    const trimmedTitle = bookTitle.trim();
 
-    // Direct ISBN search
-    if (/^\d{10,13}$/.test(trimmedTitle)) {
+    if (isDirectIsbn) {
+      // Direct ISBN search
       covers = [{
-        title: `Book with ISBN ${trimmedTitle}`,
+        title: `Book with ISBN ${bookTitle.trim()}`,
         author: "Unknown Author",
-        coverUrl: addBook(trimmedTitle),
-        isbn: trimmedTitle,
+        coverUrl: addBook(bookTitle.trim()),
+        isbn: bookTitle.trim(),
       }];
     } else {
-      //  Search by title/author using OpenLibrary
-      covers = await getIsbnFromName(trimmedTitle, bookAuthor);
+      covers = await getIsbnFromName(bookTitle, bookAuthor);
     }
 
-    // Paginate results
-    const start = pageIndex * pageSize;
-    const end = start + pageSize;
-    const books = getImagesForPage(covers, start, end);
+    const index = parseInt(req.body.index, 10);
+    let pageQuantity = index;
+    pageQuantity += index || 0; 
+    const books = getImagesForPage(covers, pageQuantity, pageQuantity + 20);
 
-    // Render page
-    res.render("bookSelection", {
-      books,
-      pageQuantity: pageIndex, // current page index
-      bookTitle,
-      bookAuthor,
-      totalPages: Math.ceil(covers.length / pageSize),
-    });
-
+    // Save covers in session or global (if needed, here just pass to render)
+    res.render("bookSelection", { books, pageQuantity, bookTitle, bookAuthor});
   } catch (err) {
     console.error("Error in POST /search:", err);
     res.redirect("/");
