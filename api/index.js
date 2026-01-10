@@ -225,7 +225,7 @@ app.post("/search", async (req, res) => {
     let covers = [];
     const trimmedTitle = bookTitle.trim();
 
-    // 1️⃣ Direct ISBN search
+    // Direct ISBN search
     if (/^\d{10,13}$/.test(trimmedTitle)) {
       covers = [{
         title: `Book with ISBN ${trimmedTitle}`,
@@ -234,16 +234,16 @@ app.post("/search", async (req, res) => {
         isbn: trimmedTitle,
       }];
     } else {
-      // 2️⃣ Search by title/author using OpenLibrary
+      //  Search by title/author using OpenLibrary
       covers = await getIsbnFromName(trimmedTitle, bookAuthor);
     }
 
-    // 3️⃣ Paginate results
+    // Paginate results
     const start = pageIndex * pageSize;
     const end = start + pageSize;
     const books = getImagesForPage(covers, start, end);
 
-    // 4️⃣ Render page
+    // Render page
     res.render("bookSelection", {
       books,
       pageQuantity: pageIndex, // current page index
