@@ -212,7 +212,6 @@ console.log("user:", user);
 // Create books array with cover URLs for current page slice
 function getImagesForPage(covers, start, end) {
   const sliced = covers.slice(start, end);
-
   // Map to books format for template
   return sliced.map((book, index) => ({
     title: book.title || `Book with ISBN ${book.isbn || "unknown"}`,
@@ -222,6 +221,8 @@ function getImagesForPage(covers, start, end) {
     isbn: book.isbn,
   }));
 }
+// global index for paging
+let pageQuantity = 0;
 // search for a book with paging
 app.post("/search", async (req, res) => {
   try {
@@ -243,7 +244,6 @@ app.post("/search", async (req, res) => {
     }
 
     const index = parseInt(req.body.index, 10);
-    let pageQuantity = index;
     pageQuantity += index || 0; 
     const books = getImagesForPage(covers, pageQuantity, pageQuantity + 20);
 
