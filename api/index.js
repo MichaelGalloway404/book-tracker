@@ -27,6 +27,9 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
+// varible to keep track of what page we are on
+let pageQuantity = 0;
+
 /* =====================
    AUTH MIDDLEWARE
 ===================== */
